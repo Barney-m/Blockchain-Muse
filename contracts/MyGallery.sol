@@ -83,16 +83,16 @@ contract MyGallery {
     }
 
     // *Purchase Song*
-    // function issueSong(int256 ismn) external songExist(ismn) {
-    //     songs[ismn].available = false;
-    //     setListedSongAvailability(ismn, false);
-    // }
+    function issueSong(int256 ismn) external songExist(ismn) {
+        songs[ismn].available = false;
+        setListedSongAvailability(ismn, false);
+    }
 
     // *Return Song*
-    // function returnSong(int256 ismn) external songExist(ismn) {
-    //     songs[ismn].available = true;
-    //     setListedSongAvailability(ismn, true);
-    // }
+    function returnSong(int256 ismn) external songExist(ismn) {
+        songs[ismn].available = true;
+        setListedSongAvailability(ismn, true);
+    }
 
     function getSongCount() external view returns (uint256) {
         return songList.length;
