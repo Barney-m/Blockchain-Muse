@@ -3,6 +3,8 @@
 		<div class="container is-fluid">
 			<div class="columns">
 				<AddSongForm @onAddSong="updateSongList" class="column is-one-third" />
+			</div>
+			<div>
 				<SongList
 					@onIssueSong="updateSongList"
 					@onReturnSong="updateSongList"
@@ -13,9 +15,7 @@
 				/>
 			</div>
 		</div>
-		<div>
-			
-		</div>
+		<div></div>
 	</section>
 </template>
 
@@ -54,6 +54,8 @@ export default {
 						author: song.author,
 						category: song.category,
 						ismn: song.ismn,
+						link: song.link,
+						passcode: song.passcode,
 						available: song.available
 					};
 				});
@@ -66,7 +68,7 @@ export default {
 			this.songCount = await this.$contract.getSongCount();
 		},
 
-		async getCreatedSongs(){
+		async getCreatedSongs() {
 			try {
 				const result = await this.$contract.getCreatedSongs();
 
@@ -76,6 +78,8 @@ export default {
 						author: song.author,
 						category: song.category,
 						ismn: song.ismn,
+						link: song.link,
+						passcode: song.passcode,
 						available: song.available
 					};
 				});

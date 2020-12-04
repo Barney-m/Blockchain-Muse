@@ -10,20 +10,24 @@
 				<b-input v-model.trim="author"></b-input>
 			</b-field>
 
+			<b-field label="link">
+				<b-input v-model.trim="link"></b-input>
+			</b-field>
+
+			<b-field label="passcode">
+				<b-input v-model.trim="passcode"></b-input>
+			</b-field>
+
 			<span class="is-size-6">Song Category:</span>
 			<div class="block category-btns">
 				<b-radio v-model="category" name="category" native-value="0">Pop</b-radio>
 				<b-radio v-model="category" name="category" native-value="1">Indie</b-radio>
 				<b-radio v-model="category" name="category" native-value="2">Rock</b-radio>
-				<b-radio v-model="category" name="category" native-value="3"
-					>HipHop</b-radio
-				>
+				<b-radio v-model="category" name="category" native-value="3">HipHop</b-radio>
 				<b-radio v-model="category" name="category" native-value="4">Mood</b-radio>
 				<b-radio v-model="category" name="category" native-value="5">Chill</b-radio>
 				<b-radio v-model="category" name="category" native-value="6">RnB</b-radio>
-				<b-radio v-model="category" name="category" native-value="7"
-					>Romance</b-radio
-				>
+				<b-radio v-model="category" name="category" native-value="7">Romance</b-radio>
 				<b-radio v-model="category" name="category" native-value="8">Jazz</b-radio>
 				<b-radio v-model="category" name="category" native-value="9">Anime</b-radio>
 			</div>
@@ -45,7 +49,9 @@ export default {
 		return {
 			title: "",
 			author: "",
-			category: 2
+			category: 2,
+			link:"",
+			passcode:""
 		};
 	},
 
@@ -53,12 +59,14 @@ export default {
 		async addSong() {
 			try {
 				const ismn = this.newISMN();
-				await this.$contract.addSong(this.title, this.author, this.category, ismn);
+				await this.$contract.addSong(this.title, this.author, this.category, ismn,this.link,this.passcode);
 
 				this.onAddSong({
 					title: this.title,
 					author: this.author,
 					category: this.category,
+					link:this.link,
+					passcode:this.passcode,
 					ismn: ismn,
 					available: true
 				});
@@ -75,6 +83,8 @@ export default {
 			this.title = "";
 			this.author = "";
 			this.category = 2;
+			this.link ="";
+			this.passcode = "";
 
 			this.$emit("onAddSong", { name: "onAddSong", data: song });
 		}

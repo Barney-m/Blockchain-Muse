@@ -11,6 +11,14 @@
 					props.row.author
 				}}</b-table-column>
 
+				<b-table-column field="song.link" label="Link">{{
+					props.row.link
+				}}</b-table-column>
+
+				<b-table-column field="song.passcode" label="Passcode">{{
+					props.row.passcode
+				}}</b-table-column>
+
 				<b-table-column field="user.category" label="Category" centered>
 					<span v-if="props.row.category == 0">Pop</span>
 					<span v-else-if="props.row.category == 1">Indie</span>
