@@ -14,8 +14,16 @@ contract MyGallery {
         bool exists;
     }
 
+    struct Users{
+        string userName;
+        Song[] songCreated;
+        Song[] songPurchased;
+    }
+    
     mapping(int256 => Song) private songs;
     Song[] private songList;
+    mapping(address => Users) private user;
+
 
     modifier validateAddSong (
         string memory title,
@@ -62,6 +70,9 @@ contract MyGallery {
 
         songs[ismn] = newSong;
         songList.push(newSong);
+        
+        user[msg.sender].songCreated.push(newSong);
+        
     }
 
     function getSong(int256 ismn) external view songExist(ismn) returns (Song memory){
@@ -70,7 +81,7 @@ contract MyGallery {
 
     function deleteSong(int256 ismn) external songExist(ismn) {
         delete songs[ismn];
-
+    
         for(uint i = 0; i < songList.length; i++) {
             Song memory song = songList[i];
             
@@ -80,12 +91,24 @@ contract MyGallery {
                 break;
             }
         }
+        
+        for(uint i=0; i<user[msg.sender].songCreated.length;i++){
+            Song memory song = user[msg.sender].songCreated[i];
+            
+            if(song.ismn == ismn){
+                user[msg.sender].songCreated[i] = user[msg.sender].songCreated[user[msg.sender].songCreated.length-1];
+                user[msg.sender].songCreated.pop();
+                break;
+            }
+        }
+
     }
 
     // *Purchase Song*
     function issueSong(int256 ismn) external songExist(ismn) {
         songs[ismn].available = false;
         setListedSongAvailability(ismn, false);
+        user[msg.sender].songPurchased.push(songs[ismn]);
     }
 
     // *Return Song*
@@ -93,7 +116,7 @@ contract MyGallery {
         songs[ismn].available = true;
         setListedSongAvailability(ismn, true);
     }
-
+    
     function getSongCount() external view returns (uint256) {
         return songList.length;
     }
@@ -101,6 +124,15 @@ contract MyGallery {
     function getAllSongs() external view returns (Song[] memory) {
         return songList;
     }
+    
+    function getPurchasedSongs() external view returns(Song[] memory){
+        return user[msg.sender].songPurchased;
+    }
+    
+    function getCreatedSongs() external view returns(Song[] memory){
+        return user[msg.sender].songCreated;
+    }
+
 
     function mapCategoryType(int256 category) private pure returns (Category){
         if(category == 0){

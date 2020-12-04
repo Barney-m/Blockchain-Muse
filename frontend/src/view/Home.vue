@@ -13,6 +13,9 @@
 				/>
 			</div>
 		</div>
+		<div>
+			
+		</div>
 	</section>
 </template>
 
@@ -37,7 +40,7 @@ export default {
 	},
 
 	async created() {
-		await Promise.all([this.getAllSongs(), this.getSongCount()]);
+		await Promise.all([this.getCreatedSongs(), this.getSongCount()]);
 	},
 
 	methods: {
@@ -61,6 +64,24 @@ export default {
 
 		async getSongCount() {
 			this.songCount = await this.$contract.getSongCount();
+		},
+
+		async getCreatedSongs(){
+			try {
+				const result = await this.$contract.getCreatedSongs();
+
+				this.songs = result.map((song) => {
+					return {
+						title: song.title,
+						author: song.author,
+						category: song.category,
+						ismn: song.ismn,
+						available: song.available
+					};
+				});
+			} catch (error) {
+				this.handle(error);
+			}
 		},
 
 		updateSongList(event) {
