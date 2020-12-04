@@ -2,7 +2,11 @@
 pragma solidity ^0.7.0;
 pragma experimental ABIEncoderV2;
 
-contract MyGallery {
+contract Muse {
+    
+    // ISMN begins from 1000000000000
+    // 1 Ether = 1000000000000000000 Wei
+    
     enum Category {
         Pop,
         Indie,
@@ -19,25 +23,36 @@ contract MyGallery {
     /**The link is link for the song, 
     after user purchase only will show the passcode (havent do yet for customer logic) */
     struct Song {
+        int256 ismn;
+        bool exists;
+        Description description;
+        Details details;
+    }
+
+    struct Description {
         string title;
         string author;
         Category category;
-        int256 ismn;
+    }
+    
+    struct Details {
         string link;
         string passcode;
         bool available;
-        bool exists;
+        uint price;
+        address payable owner;
     }
 
     struct Users {
         string userName;
-        Song[] songCreated;
-        Song[] songPurchased;
+        int256[] purchases;
+        int256[] creations;
     }
 
     mapping(int256 => Song) private songs;
     Song[] private songList;
-    mapping(address => Users) private user;
+
+    mapping(address => Users) private users;
 
     /**Removed the ismn validation because it is auto generated,
     so no use for validate it, one error here is i cannot add validation le,
@@ -87,31 +102,62 @@ contract MyGallery {
         int256 category,
         int256 ismn,
         string memory link,
-        string memory passcode
+        string memory passcode,
+        uint price
     ) external validateAddSong(title, author, category, link) {
-        Song memory newSong = Song(
+        
+        Description memory description = toDescription(
             title,
             author,
-            mapCategoryType(category),
+            category
+        );
+        
+        Details memory details = toDetails(
+            link,
+            passcode,
+            price
+        );
+        
+        Song memory newSong = toSong(
             ismn,
+            description,
+            details
+        );
+
+        songs[newSong.ismn] = newSong;
+        songList.push(newSong);
+
+        users[msg.sender].creations.push(newSong.ismn);
+    }
+
+    function toSong(int256 ismn, Description memory description, Details memory details) private pure returns (Song memory){
+        return Song(
+            ismn,
+            true,
+            description,  
+            details  
+        );
+    }
+
+    function toDescription(string memory title, string memory author, int256 category) private pure returns (Description memory){
+        return Description(
+            title,
+            author,
+            mapCategoryType(category)
+        );
+    }
+    
+    function toDetails(string memory link, string memory passcode, uint price) private view returns (Details memory){
+        return Details(
             link,
             passcode,
             true,
-            true
+            price,
+            msg.sender
         );
-
-        songs[ismn] = newSong;
-        songList.push(newSong);
-
-        user[msg.sender].songCreated.push(newSong);
     }
 
-    function getSong(int256 ismn)
-        external
-        view
-        songExist(ismn)
-        returns (Song memory)
-    {
+    function getSong(int256 ismn) public view songExist(ismn) returns (Song memory){
         return songs[ismn];
     }
 
@@ -128,30 +174,29 @@ contract MyGallery {
             }
         }
 
-        for (uint256 i = 0; i < user[msg.sender].songCreated.length; i++) {
-            Song memory song = user[msg.sender].songCreated[i];
+        int256[] storage userCreations = users[msg.sender].creations;
 
-            if (song.ismn == ismn) {
-                user[msg.sender].songCreated[i] = user[msg.sender]
-                    .songCreated[user[msg.sender].songCreated.length - 1];
-                user[msg.sender].songCreated.pop();
+        for (uint256 i = 0; i < userCreations.length; i++) {
+            if (userCreations[i] == ismn) {
+                userCreations[i] = userCreations[userCreations.length - 1];
+                userCreations.pop();
                 break;
             }
         }
     }
 
-    // *Purchase Song*
-    function issueSong(int256 ismn) external songExist(ismn) {
-        songs[ismn].available = false;
-        setListedSongAvailability(ismn, false);
-        user[msg.sender].songPurchased.push(songs[ismn]);
-    }
+    // // *Purchase Song*
+    // function issueSong(int256 ismn) external songExist(ismn) {
+    //     songs[ismn].available = false;
+    //     setListedSongAvailability(ismn, false);
+    //     user[msg.sender].songPurchased.push(songs[ismn]);
+    // }
 
-    // *Return Song*
-    function returnSong(int256 ismn) external songExist(ismn) {
-        songs[ismn].available = true;
-        setListedSongAvailability(ismn, true);
-    }
+    // // *Return Song*
+    // function returnSong(int256 ismn) external songExist(ismn) {
+    //     songs[ismn].available = true;
+    //     setListedSongAvailability(ismn, true);
+    // }
 
     function getSongCount() external view returns (uint256) {
         return songList.length;
@@ -161,22 +206,22 @@ contract MyGallery {
         return songList;
     }
 
-    /**Display only the purchased song for this user */
-    function getPurchasedSongs() external view returns (Song[] memory) {
-        return user[msg.sender].songPurchased;
+    /**Display the purchased song for this user */
+    function getPurchasedSongs() external view returns (int256[] memory) {
+        return users[msg.sender].purchases;
     }
 
     function getPurchasedSongCount() external view returns (uint256) {
-        return user[msg.sender].songPurchased.length;
+        return users[msg.sender].purchases.length;
     }
 
-    /**Display  the created song for this user */
-    function getCreatedSongs() external view returns (Song[] memory) {
-        return user[msg.sender].songCreated;
+    /**Display the created song for this user */
+    function getCreatedSongs() external view returns (int256[] memory) {
+        return users[msg.sender].creations;
     }
 
     function getCreatedSongCount() external view returns (uint256) {
-        return user[msg.sender].songCreated.length;
+        return users[msg.sender].creations.length;
     }
 
     function mapCategoryType(int256 category) private pure returns (Category) {
@@ -226,9 +271,48 @@ contract MyGallery {
     function setListedSongAvailability(int256 ismn, bool available) private {
         for (uint256 i = 0; i < songList.length; i++) {
             if (songList[i].ismn == ismn) {
-                songList[i].available = available;
+                songList[i].details.available = available;
                 break;
             }
         }
+    }
+    
+    // Muse customer
+    
+    function addPurchase(int256 ismn) payable public validatePurchase(ismn) {
+        int256[] storage purchaseList = users[msg.sender].purchases;
+        
+        Song memory song = getSong(ismn);
+        
+        makePayment(song.details.owner, song.details.price);
+        
+        purchaseList.push(ismn);
+    }
+    
+    function makePayment(address payable artistAddress, uint price) private validatePayment(price) {
+        artistAddress.transfer(price);
+    }
+    
+    // Check if message.value is more than price.
+    modifier validatePayment(uint price) {
+        require(msg.value >= price, "Payment is insufficient!");
+        _;
+    }
+    
+    // Check if buyer is eligible for purchase.
+    modifier validatePurchase(int256 ismn) {
+        require(!isPurchased(ismn), "Song already purchased!");
+        _;
+    }
+    
+    function isPurchased(int256 ismn) private view returns(bool){
+        int256[] memory purchaseList = users[msg.sender].purchases;
+        
+        for(uint256 i = 0; i < purchaseList.length; i++) {
+            if (purchaseList[i] == ismn) {
+                return true;
+            }
+        }
+        return false;
     }
 }
