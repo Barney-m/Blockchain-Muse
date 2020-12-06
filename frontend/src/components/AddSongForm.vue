@@ -50,8 +50,8 @@ export default {
 			title: "",
 			author: "",
 			category: 0,
-			link:"",
-			passcode:""
+			link: "",
+			passcode: ""
 		};
 	},
 
@@ -59,14 +59,21 @@ export default {
 		async addSong() {
 			try {
 				const ismn = this.newISMN();
-				await this.$contract.addSong(this.title, this.author, this.category, ismn,this.link,this.passcode);
+				await this.$contract.addSong(
+					this.title,
+					this.author,
+					this.category,
+					ismn,
+					this.link,
+					this.passcode
+				);
 
 				this.onAddSong({
 					title: this.title,
 					author: this.author,
 					category: this.category,
-					link:this.link,
-					passcode:this.passcode,
+					link: this.link,
+					passcode: this.passcode,
 					ismn: ismn,
 					available: true
 				});
@@ -83,7 +90,7 @@ export default {
 			this.title = "";
 			this.author = "";
 			this.category = 0;
-			this.link ="";
+			this.link = "";
 			this.passcode = "";
 
 			this.$emit("onAddSong", { name: "onAddSong", data: song });
