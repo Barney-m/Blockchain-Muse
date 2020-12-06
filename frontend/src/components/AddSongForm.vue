@@ -10,11 +10,11 @@
 				<b-input v-model.trim="author"></b-input>
 			</b-field>
 
-			<b-field label="link">
+			<b-field label="Link">
 				<b-input v-model.trim="link"></b-input>
 			</b-field>
 
-			<b-field label="passcode">
+			<b-field label="Passcode">
 				<b-input v-model.trim="passcode"></b-input>
 			</b-field>
 
@@ -49,7 +49,7 @@ export default {
 		return {
 			title: "",
 			author: "",
-			category: 2,
+			category: 0,
 			link:"",
 			passcode:""
 		};
@@ -82,7 +82,7 @@ export default {
 		onAddSong(song) {
 			this.title = "";
 			this.author = "";
-			this.category = 2;
+			this.category = 0;
 			this.link ="";
 			this.passcode = "";
 

@@ -1,5 +1,5 @@
-const MyGallery = artifacts.require("MyGallery");
+const Muse = artifacts.require("Muse");
 
 module.exports = function(deployer){
-    deployer.deploy(MyGallery);
+    deployer.deploy(Muse);
 }

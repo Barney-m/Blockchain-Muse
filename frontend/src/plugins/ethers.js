@@ -1,6 +1,6 @@
 import Vue from "vue";
 import { ethers } from "ethers";
-import MyGalleryContract from "../../../build/contracts/MyGallery.json";
+import MyGalleryContract from "../../../build/contracts/Muse.json";
 
 const plugin = {
 	install(Vue) {
