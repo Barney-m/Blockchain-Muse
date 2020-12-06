@@ -95,6 +95,13 @@ contract Muse {
 
         _;
     }
+    
+    modifier songOwner(int256 ismn) {
+        Song memory song = songs[ismn];
+        require(song.details.owner == msg.sender, "Not the owner of the song!");
+
+        _;
+    }
 
     function addSong(
         string memory title,
@@ -161,7 +168,7 @@ contract Muse {
         return songs[ismn];
     }
 
-    function deleteSong(int256 ismn) external songExist(ismn) {
+    function deleteSong(int256 ismn) external songExist(ismn) songOwner(ismn){
         delete songs[ismn];
 
         for (uint256 i = 0; i < songList.length; i++) {
